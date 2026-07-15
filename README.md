@@ -65,8 +65,8 @@ cp -r xubiao-skills ~/.config/skills/
 徐彪Skills/
 ├── SKILL.md                     ← 角色设定入口（~300行）
 ├── references/
-│   ├── language_fingerprint.md  ← 语言指纹（500+行）
-│   ├── personality_profile.md   ← 人格画像（300+行）
+│   ├── language_fingerprint.md  ← 语言指纹（800+行）
+│   ├── personality_profile.md   ← 人格画像（800+行）
 │   ├── conversation_patterns.md ← 对话模式（12场景）
 │   └── stats.json               ← 统计数据
 └── scripts/
@@ -75,83 +75,11 @@ cp -r xubiao-skills ~/.config/skills/
     └── sample_for_llm.py       ← 分层采样脚本
 ```
 
-## 如何从自己的微信聊天记录构建分身
+## 如何复用
 
-如果你的微信数据库已经解密，可以用 `scripts/` 下的工具链复现。
+本项目包含从个人微信聊天记录构建 AI 分身的完整工具链。`scripts/` 目录提供了数据清洗、统计分析和采样脚本，可复现分析流程。
 
-### 步骤 1：数据清洗
-
-```bash
-python3 scripts/build_dataset.py \
-  --output references/clean_messages.jsonl \
-  --min-self 20
-```
-
-从解密后的 SQLite 数据库提取单人对话文本消息。需要配置：
-- `vendor/wechat-decrypt/decrypted/` — 解密后的数据库目录
-- `vendor/wechat-decrypt/config.json` — 含 own_wxid
-
-**核心逻辑**：通过 WeChat 的 `Name2Id` 表 + `real_sender_id` 字段精确识别"我"的消息（非简单启发式）。
-
-### 步骤 2：统计分析
-
-```bash
-python3 scripts/analyze_style.py --pretty
-```
-输出词频、emoji、标点、时间分布等统计。
-
-### 步骤 3：采样
-
-```bash
-python3 scripts/sample_for_llm.py --size 5000
-```
-按季度分层 + 长度多样性采样。
-
-### 步骤 4：LLM 分析
-
-将采样消息分批送入大模型，生成三份分析文件：
-- `language_fingerprint.md` — 语言风格
-- `personality_profile.md` — 人格画像
-- `conversation_patterns.md` — 对话模式
-
-### 步骤 5：蒸馏 Persona
-
-综合以上分析，编写 `SKILL.md` 作为最终角色设定。
-
-### 步骤 6：验证与打包
-
-```bash
-# 验证
-python3 <skill-creator>/scripts/quick_validate.py ./
-
-# 打包为 .skill 文件
-python3 <skill-creator>/scripts/package_skill.py . ./dist/
-```
-
-## 技术说明
-
-### 发送者识别（关键难点）
-
-微信 4.0 数据库中，`Msg_{md5}` 表有 `real_sender_id` 字段。在单人对话中：
-- 对话双方的 `real_sender_id` 分别对应 `Name2Id` 表中的不同 rowid
-- 通过 `Name2Id` 把 `real_sender_id` 翻译成 username
-- 与 config.json 中的 own_wxid 比对 → 精确判定"我"的消息
-
-**群聊中不适用**（`real_sender_id` 在群聊里只标识发言人编号），因此本 Skill 仅使用单人对话数据。
-
-### 消息类型
-
-| 类型 | 处理方式 |
-|------|----------|
-| 文本 (type=1) | 明文或 ZSTD 解压 |
-| 图片 (type=3) | 丢弃 |
-| 语音 (type=34) | 丢弃 |
-| 表情 (type=47) | 丢弃 |
-| 链接 (type=49) | 丢弃 |
-| 通话 (type=50) | 丢弃 |
-| 系统消息 | 丢弃 |
-
-仅保留纯文本消息用于语言风格分析。
+具体使用方法请参考各脚本内的文档注释。
 
 ## 隐私说明
 
