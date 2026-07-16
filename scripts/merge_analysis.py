@@ -24,7 +24,7 @@ def parse_reports():
     """解析所有 mini_report_NN.md 为结构化数据"""
     reports = []
     
-    for i in range(1, 13):
+    for i in range(1, 27):  # 26 batches
         path = RAW_DIR / f"mini_report_{i:02d}.md"
         if not path.exists():
             print(f"  ⚠️  {path.name} 不存在，跳过")
