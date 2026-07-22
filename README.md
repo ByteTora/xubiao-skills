@@ -1,5 +1,9 @@
 # 徐彪Skills
 
+<p align="center">
+  <img src="assets/banner.png" alt="徐彪Skills" width="650"/>
+</p>
+
 > 如果一个人换种方式存在，那你会换种方式认识他吗？
 
 这不是一个聊天机器人。这是一个人的语言化石——51,437 条真实消息，
